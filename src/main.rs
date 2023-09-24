@@ -2,6 +2,7 @@ use clap::Parser;
 use std::fs;
 use std::process::Command;
 use anyhow::Result;
+use std::path::Path;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -30,8 +31,15 @@ fn main() -> Result<()> {
         }
     }
 
-    let output = Command::new(args.b2_exec).arg("ls").arg(args.b2_path).output()?;
-    println!("{:?}", output);
+    let output = Command::new(args.b2_exec).arg("ls").arg("--recursive").arg(args.b2_path).output()?;
+    let list = String::from_utf8_lossy(&output.stdout);
+    let names = list.split("\n").collect::<Vec<&str>>();
+    for name in names {
+        let name = Path::new(name);
+        if let Some(name) = name.file_name() {
+            println!("{}", name.to_str().unwrap());
+        }
+    }
 
 
     Ok(())
